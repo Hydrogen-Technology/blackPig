@@ -1,0 +1,22 @@
+.menu-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background-color: #fff;
+    border-bottom: 1rpx solid #eee;
+    border-radius: 20rpx;
+}
+.selected {
+    color: rgb(202, 20, 93);
+    border-bottom:2rpx solid rgb(202, 20, 93);
+    padding-bottom: 10rpx; // 增加底部内边距
+}
+.content {
+    margin-top: 30rpx;
+}
+.reserve-card {
+    margin: 0 0;
+    margin-top: 30rpx;
+}

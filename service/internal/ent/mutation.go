@@ -31,16 +31,14 @@ type UserMutation struct {
 	config
 	op                Op
 	typ               string
-	id                *int
+	id                *int32
 	username          *string
 	phone             *string
-	carPictures       *func(string) *field.stringBuilder
-	openid            *[]string
-	appendopenid      []string
-	gender            *[]string
-	appendgender      []string
-	description       *[]string
-	appenddescription []string
+	carPictures       *[]string
+	appendcarPictures []string
+	openid            *string
+	gender            *string
+	description       *string
 	clearedFields     map[string]struct{}
 	done              bool
 	oldValue          func(context.Context) (*User, error)
@@ -67,7 +65,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id int) userOption {
+func withUserID(id int32) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -119,13 +117,13 @@ func (m UserMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of User entities.
-func (m *UserMutation) SetID(id int) {
+func (m *UserMutation) SetID(id int32) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserMutation) ID() (id int, exists bool) {
+func (m *UserMutation) ID() (id int32, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -136,12 +134,12 @@ func (m *UserMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *UserMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *UserMutation) IDs(ctx context.Context) ([]int32, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []int32{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -224,12 +222,13 @@ func (m *UserMutation) ResetPhone() {
 }
 
 // SetCarPictures sets the "carPictures" field.
-func (m *UserMutation) SetCarPictures(fb func(string) *field.stringBuilder) {
-	m.carPictures = &fb
+func (m *UserMutation) SetCarPictures(s []string) {
+	m.carPictures = &s
+	m.appendcarPictures = nil
 }
 
 // CarPictures returns the value of the "carPictures" field in the mutation.
-func (m *UserMutation) CarPictures() (r func(string) *field.stringBuilder, exists bool) {
+func (m *UserMutation) CarPictures() (r []string, exists bool) {
 	v := m.carPictures
 	if v == nil {
 		return
@@ -240,7 +239,7 @@ func (m *UserMutation) CarPictures() (r func(string) *field.stringBuilder, exist
 // OldCarPictures returns the old "carPictures" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCarPictures(ctx context.Context) (v func(string) *field.stringBuilder, err error) {
+func (m *UserMutation) OldCarPictures(ctx context.Context) (v []string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCarPictures is only allowed on UpdateOne operations")
 	}
@@ -254,19 +253,32 @@ func (m *UserMutation) OldCarPictures(ctx context.Context) (v func(string) *fiel
 	return oldValue.CarPictures, nil
 }
 
+// AppendCarPictures adds s to the "carPictures" field.
+func (m *UserMutation) AppendCarPictures(s []string) {
+	m.appendcarPictures = append(m.appendcarPictures, s...)
+}
+
+// AppendedCarPictures returns the list of values that were appended to the "carPictures" field in this mutation.
+func (m *UserMutation) AppendedCarPictures() ([]string, bool) {
+	if len(m.appendcarPictures) == 0 {
+		return nil, false
+	}
+	return m.appendcarPictures, true
+}
+
 // ResetCarPictures resets all changes to the "carPictures" field.
 func (m *UserMutation) ResetCarPictures() {
 	m.carPictures = nil
+	m.appendcarPictures = nil
 }
 
 // SetOpenid sets the "openid" field.
-func (m *UserMutation) SetOpenid(s []string) {
+func (m *UserMutation) SetOpenid(s string) {
 	m.openid = &s
-	m.appendopenid = nil
 }
 
 // Openid returns the value of the "openid" field in the mutation.
-func (m *UserMutation) Openid() (r []string, exists bool) {
+func (m *UserMutation) Openid() (r string, exists bool) {
 	v := m.openid
 	if v == nil {
 		return
@@ -277,7 +289,7 @@ func (m *UserMutation) Openid() (r []string, exists bool) {
 // OldOpenid returns the old "openid" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldOpenid(ctx context.Context) (v []string, err error) {
+func (m *UserMutation) OldOpenid(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOpenid is only allowed on UpdateOne operations")
 	}
@@ -291,33 +303,18 @@ func (m *UserMutation) OldOpenid(ctx context.Context) (v []string, err error) {
 	return oldValue.Openid, nil
 }
 
-// AppendOpenid adds s to the "openid" field.
-func (m *UserMutation) AppendOpenid(s []string) {
-	m.appendopenid = append(m.appendopenid, s...)
-}
-
-// AppendedOpenid returns the list of values that were appended to the "openid" field in this mutation.
-func (m *UserMutation) AppendedOpenid() ([]string, bool) {
-	if len(m.appendopenid) == 0 {
-		return nil, false
-	}
-	return m.appendopenid, true
-}
-
 // ResetOpenid resets all changes to the "openid" field.
 func (m *UserMutation) ResetOpenid() {
 	m.openid = nil
-	m.appendopenid = nil
 }
 
 // SetGender sets the "gender" field.
-func (m *UserMutation) SetGender(s []string) {
+func (m *UserMutation) SetGender(s string) {
 	m.gender = &s
-	m.appendgender = nil
 }
 
 // Gender returns the value of the "gender" field in the mutation.
-func (m *UserMutation) Gender() (r []string, exists bool) {
+func (m *UserMutation) Gender() (r string, exists bool) {
 	v := m.gender
 	if v == nil {
 		return
@@ -328,7 +325,7 @@ func (m *UserMutation) Gender() (r []string, exists bool) {
 // OldGender returns the old "gender" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldGender(ctx context.Context) (v []string, err error) {
+func (m *UserMutation) OldGender(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldGender is only allowed on UpdateOne operations")
 	}
@@ -342,33 +339,18 @@ func (m *UserMutation) OldGender(ctx context.Context) (v []string, err error) {
 	return oldValue.Gender, nil
 }
 
-// AppendGender adds s to the "gender" field.
-func (m *UserMutation) AppendGender(s []string) {
-	m.appendgender = append(m.appendgender, s...)
-}
-
-// AppendedGender returns the list of values that were appended to the "gender" field in this mutation.
-func (m *UserMutation) AppendedGender() ([]string, bool) {
-	if len(m.appendgender) == 0 {
-		return nil, false
-	}
-	return m.appendgender, true
-}
-
 // ResetGender resets all changes to the "gender" field.
 func (m *UserMutation) ResetGender() {
 	m.gender = nil
-	m.appendgender = nil
 }
 
 // SetDescription sets the "description" field.
-func (m *UserMutation) SetDescription(s []string) {
+func (m *UserMutation) SetDescription(s string) {
 	m.description = &s
-	m.appenddescription = nil
 }
 
 // Description returns the value of the "description" field in the mutation.
-func (m *UserMutation) Description() (r []string, exists bool) {
+func (m *UserMutation) Description() (r string, exists bool) {
 	v := m.description
 	if v == nil {
 		return
@@ -379,7 +361,7 @@ func (m *UserMutation) Description() (r []string, exists bool) {
 // OldDescription returns the old "description" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldDescription(ctx context.Context) (v []string, err error) {
+func (m *UserMutation) OldDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -393,23 +375,9 @@ func (m *UserMutation) OldDescription(ctx context.Context) (v []string, err erro
 	return oldValue.Description, nil
 }
 
-// AppendDescription adds s to the "description" field.
-func (m *UserMutation) AppendDescription(s []string) {
-	m.appenddescription = append(m.appenddescription, s...)
-}
-
-// AppendedDescription returns the list of values that were appended to the "description" field in this mutation.
-func (m *UserMutation) AppendedDescription() ([]string, bool) {
-	if len(m.appenddescription) == 0 {
-		return nil, false
-	}
-	return m.appenddescription, true
-}
-
 // ResetDescription resets all changes to the "description" field.
 func (m *UserMutation) ResetDescription() {
 	m.description = nil
-	m.appenddescription = nil
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -530,28 +498,28 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetPhone(v)
 		return nil
 	case user.FieldCarPictures:
-		v, ok := value.(func(string) *field.stringBuilder)
+		v, ok := value.([]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCarPictures(v)
 		return nil
 	case user.FieldOpenid:
-		v, ok := value.([]string)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOpenid(v)
 		return nil
 	case user.FieldGender:
-		v, ok := value.([]string)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGender(v)
 		return nil
 	case user.FieldDescription:
-		v, ok := value.([]string)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

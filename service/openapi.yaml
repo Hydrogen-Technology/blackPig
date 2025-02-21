@@ -3,21 +3,17 @@
 
 openapi: 3.0.3
 info:
-    title: Greeter API
-    description: The greeting service definition.
+    title: UserService API
     version: 0.0.1
 paths:
-    /helloworld/{name}:
+    /v1/blackpig/user/by_phone:
         get:
             tags:
-                - Greeter
-                - subgroup
-            description: Sends a greeting
-            operationId: Greeter_SayHello
+                - UserService
+            operationId: UserService_FindUserByPhone
             parameters:
-                - name: name
-                  in: path
-                  required: true
+                - name: phone
+                  in: query
                   schema:
                     type: string
             responses:
@@ -26,14 +22,154 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+                                $ref: '#/components/schemas/blackpig.v1.UserReply'
+    /v1/blackpig/user/delete_user:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_DeleteUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v1.DeleteUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v1.DeleteUserReply'
+    /v1/blackpig/user/list_user:
+        get:
+            tags:
+                - UserService
+            operationId: UserService_ListUser
+            parameters:
+                - name: current
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: size
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyWord
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v1.ListReply'
+    /v1/blackpig/user/login:
+        get:
+            tags:
+                - UserService
+            operationId: UserService_Login
+            parameters:
+                - name: code
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v1.UserReply'
+    /v1/blackpig/user/register:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v1.User'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v1.RegisterReply'
+    /v1/blackpig/user/update_user:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_UpdateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v1.User'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v1.UserReply'
 components:
     schemas:
-        helloworld.v1.HelloReply:
+        blackpig.v1.DeleteUserReply:
             type: object
             properties:
-                message:
+                state:
                     type: string
-            description: The response message containing the greetings
+        blackpig.v1.DeleteUserRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+        blackpig.v1.ListReply:
+            type: object
+            properties:
+                user:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/blackpig.v1.User'
+        blackpig.v1.RegisterReply:
+            type: object
+            properties:
+                state:
+                    type: string
+        blackpig.v1.User:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                openid:
+                    type: string
+                phone:
+                    type: string
+                username:
+                    type: string
+                gender:
+                    type: string
+                carPictures:
+                    type: array
+                    items:
+                        type: string
+                description:
+                    type: string
+        blackpig.v1.UserReply:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/blackpig.v1.User'
 tags:
-    - name: Greeter
+    - name: UserService

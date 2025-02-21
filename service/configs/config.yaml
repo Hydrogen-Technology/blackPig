@@ -8,8 +8,11 @@ server:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(127.0.0.1:3306)/test?parseTime=True&loc=Local
+    source: root:Root@2233@tcp(113.44.59.175:3306)/blackpig?timeout=100s&parseTime=true&loc=Local&charset=utf8mb4,utf8
   redis:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
+wechat:
+  appid: wx839b2352dfe2e47e
+  app_secret: a75122d622ff47cb9d6d9269869c7e15

@@ -19,24 +19,30 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserServiceDeleteUser = "/blackpig.v1.UserService/DeleteUser"
 const OperationUserServiceFindUserByPhone = "/blackpig.v1.UserService/FindUserByPhone"
 const OperationUserServiceListUser = "/blackpig.v1.UserService/ListUser"
 const OperationUserServiceLogin = "/blackpig.v1.UserService/Login"
 const OperationUserServiceRegister = "/blackpig.v1.UserService/Register"
+const OperationUserServiceUpdateUser = "/blackpig.v1.UserService/UpdateUser"
 
 type UserServiceHTTPServer interface {
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserReply, error)
 	FindUserByPhone(context.Context, *UserByPhoneRequest) (*UserReply, error)
 	ListUser(context.Context, *ListRequest) (*ListReply, error)
 	Login(context.Context, *LoginRequest) (*UserReply, error)
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
+	UpdateUser(context.Context, *RegisterRequest) (*UserReply, error)
 }
 
 func RegisterUserServiceHTTPServer(s *http.Server, srv UserServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("v1/blackpig/user/login", _UserService_Login0_HTTP_Handler(srv))
-	r.POST("v1/blackpig/user/register", _UserService_Register0_HTTP_Handler(srv))
-	r.GET("v1/blackpig/user/list", _UserService_ListUser0_HTTP_Handler(srv))
-	r.GET("v1/blackpig/user/by_phone", _UserService_FindUserByPhone0_HTTP_Handler(srv))
+	r.GET("/v1/blackpig/user/login", _UserService_Login0_HTTP_Handler(srv))
+	r.POST("/v1/blackpig/user/register", _UserService_Register0_HTTP_Handler(srv))
+	r.GET("/v1/blackpig/user/list_user", _UserService_ListUser0_HTTP_Handler(srv))
+	r.GET("/v1/blackpig/user/by_phone", _UserService_FindUserByPhone0_HTTP_Handler(srv))
+	r.POST("/v1/blackpig/user/update_user", _UserService_UpdateUser0_HTTP_Handler(srv))
+	r.POST("/v1/blackpig/user/delete_user", _UserService_DeleteUser0_HTTP_Handler(srv))
 }
 
 func _UserService_Login0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
@@ -118,11 +124,57 @@ func _UserService_FindUserByPhone0_HTTP_Handler(srv UserServiceHTTPServer) func(
 	}
 }
 
+func _UserService_UpdateUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in RegisterRequest
+		if err := ctx.Bind(&in.User); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserServiceUpdateUser)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateUser(ctx, req.(*RegisterRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UserReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _UserService_DeleteUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteUserRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserServiceDeleteUser)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteUser(ctx, req.(*DeleteUserRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteUserReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserServiceHTTPClient interface {
+	DeleteUser(ctx context.Context, req *DeleteUserRequest, opts ...http.CallOption) (rsp *DeleteUserReply, err error)
 	FindUserByPhone(ctx context.Context, req *UserByPhoneRequest, opts ...http.CallOption) (rsp *UserReply, err error)
 	ListUser(ctx context.Context, req *ListRequest, opts ...http.CallOption) (rsp *ListReply, err error)
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *UserReply, err error)
 	Register(ctx context.Context, req *RegisterRequest, opts ...http.CallOption) (rsp *RegisterReply, err error)
+	UpdateUser(ctx context.Context, req *RegisterRequest, opts ...http.CallOption) (rsp *UserReply, err error)
 }
 
 type UserServiceHTTPClientImpl struct {
@@ -133,9 +185,22 @@ func NewUserServiceHTTPClient(client *http.Client) UserServiceHTTPClient {
 	return &UserServiceHTTPClientImpl{client}
 }
 
+func (c *UserServiceHTTPClientImpl) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...http.CallOption) (*DeleteUserReply, error) {
+	var out DeleteUserReply
+	pattern := "/v1/blackpig/user/delete_user"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserServiceDeleteUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *UserServiceHTTPClientImpl) FindUserByPhone(ctx context.Context, in *UserByPhoneRequest, opts ...http.CallOption) (*UserReply, error) {
 	var out UserReply
-	pattern := "v1/blackpig/user/by_phone"
+	pattern := "/v1/blackpig/user/by_phone"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceFindUserByPhone))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -148,7 +213,7 @@ func (c *UserServiceHTTPClientImpl) FindUserByPhone(ctx context.Context, in *Use
 
 func (c *UserServiceHTTPClientImpl) ListUser(ctx context.Context, in *ListRequest, opts ...http.CallOption) (*ListReply, error) {
 	var out ListReply
-	pattern := "v1/blackpig/user/list"
+	pattern := "/v1/blackpig/user/list_user"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceListUser))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -161,7 +226,7 @@ func (c *UserServiceHTTPClientImpl) ListUser(ctx context.Context, in *ListReques
 
 func (c *UserServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*UserReply, error) {
 	var out UserReply
-	pattern := "v1/blackpig/user/login"
+	pattern := "/v1/blackpig/user/login"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceLogin))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -174,9 +239,22 @@ func (c *UserServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest,
 
 func (c *UserServiceHTTPClientImpl) Register(ctx context.Context, in *RegisterRequest, opts ...http.CallOption) (*RegisterReply, error) {
 	var out RegisterReply
-	pattern := "v1/blackpig/user/register"
+	pattern := "/v1/blackpig/user/register"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserServiceRegister))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in.User, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserServiceHTTPClientImpl) UpdateUser(ctx context.Context, in *RegisterRequest, opts ...http.CallOption) (*UserReply, error) {
+	var out UserReply
+	pattern := "/v1/blackpig/user/update_user"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserServiceUpdateUser))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in.User, &out, opts...)
 	if err != nil {

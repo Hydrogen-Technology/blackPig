@@ -22,7 +22,7 @@ import (
 
 // Injectors from wire.go:
 
-// wireApp init kratos application.
+// wireApp init 这里wireApp中参数的作用是把config.yaml文件中的数据内容导入internal/config/config.pb.go中
 func wireApp(confServer *conf.Server, confData *conf.Data, wechat *conf.Wechat, logger log.Logger) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
