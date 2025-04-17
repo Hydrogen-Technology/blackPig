@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package blackpig.v2;
+import "google/api/annotations.proto";
+option go_package = "api/blackPig/v2;v2";
+
+message Times {
+  int64 id = 1;
+  int32 userId = 2;
+  string timeSpace = 3;
+  string startTime = 4;
+}
+message TimeList {
+  int64 id = 1;
+  int32 userId = 2;
+  repeated Times times = 3;
+}
+
+message TimeRequest {
+  int32 userId = 1;
+  string timeSpace = 2;
+  string startTime = 3;
+}
+service TimeService {
+  rpc CreateTime(TimeRequest) returns (Times) {  // 创建时间表的时间项
+    option (google.api.http) = {
+      post: "/v2/times/add"
+      body: "*"
+    };
+  }
+  rpc ListTimes(TimeListRequest) returns (TimeList) {  // 获取时间表的时间项列表
+    option (google.api.http) = {
+      get: "/v2/times/list{id}"
+    };
+  }
+  rpc UpdateTime(Times) returns (Times) {  // 更新时间表的时间项
+    option (google.api.http) = {
+      patch: "/v2/times/update"
+      body: "time"
+    };
+  }
+  rpc DeleteTime(DeleteTimeRequest) returns (DeleteTimeResponse) {  // 删除时间表的时间项
+    option (google.api.http) = {
+      delete: "/v2/times/{id}"
+    };
+  }
+}
+
+message TimeListRequest {
+  int32 id = 1;
+}
+message DeleteTimeRequest {
+  int64 id = 1;
+}
+message DeleteTimeResponse {
+  bool success = 1;
+}

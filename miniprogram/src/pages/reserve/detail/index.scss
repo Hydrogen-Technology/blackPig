@@ -1,0 +1,48 @@
+.leaders {
+    margin-top: 30rpx; 
+    background-color: rgb(255, 255, 255);
+    border-radius: 20rpx;
+}
+.panel {
+    background-color: white;
+    border-radius: 20rpx;
+    margin-top: 10rpx;
+}
+.base {
+    background-color: transparent;
+}
+.tag {
+    background-color: #d01257;
+    color:white;
+    margin-bottom: 10rpx;
+}
+.divider {
+    height: 50rpx;
+}
+.btn {
+    width: 70vw;
+    margin-top: 50rpx;
+}
+.time {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 20rpx !important;
+}
+.end {
+    border-left: 1px solid #e5e4e4;
+}
+.group {
+    display: flex;
+    white-space: space-between;
+    align-items: center;
+    margin-bottom: 20rpx;
+}
+.reserved {
+
+    text-align: center;
+}
+.bottom {
+    padding-bottom: 10vh;
+}

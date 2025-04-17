@@ -8,6 +8,42 @@ import (
 	"service/internal/ent"
 )
 
+// The ReserveFunc type is an adapter to allow the use of ordinary
+// function as Reserve mutator.
+type ReserveFunc func(context.Context, *ent.ReserveMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ReserveFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReserveMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReserveMutation", m)
+}
+
+// The TimeListFunc type is an adapter to allow the use of ordinary
+// function as TimeList mutator.
+type TimeListFunc func(context.Context, *ent.TimeListMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimeListFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TimeListMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimeListMutation", m)
+}
+
+// The TimesFunc type is an adapter to allow the use of ordinary
+// function as Times mutator.
+type TimesFunc func(context.Context, *ent.TimesMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TimesMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimesMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

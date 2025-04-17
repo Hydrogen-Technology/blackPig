@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package blackpig.v2;
+import "google/api/annotations.proto";
+option go_package = "api/blackPig/v2;v2";
+message TimeTable {
+  int32 id = 1;
+  string start_time = 2;
+  string end_time = 3;
+  string day = 4;
+  int32 user_id = 5; // 用户id
+  int32 ordered_id = 6;  // 被预约的导员的id
+  string created_at = 7;
+  string updated_at = 8;
+}
+message Ordered {
+  repeated TimeTable time_tables = 2;
+}
+
+service TimeTableService {
+  rpc AddTimeTables(Ordered) returns (Ordered) { //用户预约导员
+    option (google.api.http) = {
+      post: "/v2/reserve/add"
+      body: "*"
+    };
+  }
+  rpc UpdateTimeTable(TimeTable) returns (TimeTable) { //修改预约信息
+    option (google.api.http) = {
+      patch: "/v2/reserve/update"
+      body: "*"
+    };
+  }
+  rpc DeleteTimeTable(DeleteTimeTableRequest) returns (DeleteTimeTableResponse) { //删除预约信息
+    option (google.api.http) = {
+      delete: "/v2/reserve/delete/{id}"
+    };
+  }
+  rpc GetOrderedByOrderedId(GetOrderedRequest) returns (Ordered) { //获取导员的预约信息
+    option (google.api.http) = {
+      get: "/v2/reserve/get_ordered/{ordered_id}"
+    };
+  }
+  rpc GetTimeTablesOrdered(GetTimeTablesRequest) returns (Ordered) { //获取用户的预约信息（当天）
+    option (google.api.http) = {
+      get: "/v2/reserve/get_time_tables/{user_id}/{day}"
+    };
+  }
+}
+message DeleteTimeTableRequest {
+  int64 id = 1;
+}
+message DeleteTimeTableResponse {
+  bool success = 1;
+}
+message GetOrderedRequest {
+  int32 ordered_id = 1;
+}
+message GetTimeTablesRequest {
+  int32 user_id = 1;
+  string day = 2;
+}

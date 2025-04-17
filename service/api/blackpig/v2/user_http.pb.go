@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-http v2.8.3
 // - protoc             v5.29.2
-// source: blackpig/v1/user.proto
+// source: blackpig/v2/user.proto
 
-package v1
+package v2
 
 import (
 	context "context"
@@ -19,12 +19,12 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationUserServiceDeleteUser = "/blackpig.v1.UserService/DeleteUser"
-const OperationUserServiceFindUserByPhone = "/blackpig.v1.UserService/FindUserByPhone"
-const OperationUserServiceListUser = "/blackpig.v1.UserService/ListUser"
-const OperationUserServiceLogin = "/blackpig.v1.UserService/Login"
-const OperationUserServiceRegister = "/blackpig.v1.UserService/Register"
-const OperationUserServiceUpdateUser = "/blackpig.v1.UserService/UpdateUser"
+const OperationUserServiceDeleteUser = "/blackpig.v2.UserService/DeleteUser"
+const OperationUserServiceFindUserByPhone = "/blackpig.v2.UserService/FindUserByPhone"
+const OperationUserServiceListUser = "/blackpig.v2.UserService/ListUser"
+const OperationUserServiceLogin = "/blackpig.v2.UserService/Login"
+const OperationUserServiceRegister = "/blackpig.v2.UserService/Register"
+const OperationUserServiceUpdateUser = "/blackpig.v2.UserService/UpdateUser"
 
 type UserServiceHTTPServer interface {
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserReply, error)
@@ -37,12 +37,12 @@ type UserServiceHTTPServer interface {
 
 func RegisterUserServiceHTTPServer(s *http.Server, srv UserServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/v1/blackpig/user/login", _UserService_Login0_HTTP_Handler(srv))
-	r.POST("/v1/blackpig/user/register", _UserService_Register0_HTTP_Handler(srv))
-	r.GET("/v1/blackpig/user/list_user", _UserService_ListUser0_HTTP_Handler(srv))
-	r.GET("/v1/blackpig/user/by_phone", _UserService_FindUserByPhone0_HTTP_Handler(srv))
-	r.POST("/v1/blackpig/user/update_user", _UserService_UpdateUser0_HTTP_Handler(srv))
-	r.POST("/v1/blackpig/user/delete_user", _UserService_DeleteUser0_HTTP_Handler(srv))
+	r.GET("/v2/blackpig/user/login", _UserService_Login0_HTTP_Handler(srv))
+	r.POST("/v2/blackpig/user/register", _UserService_Register0_HTTP_Handler(srv))
+	r.GET("/v2/blackpig/user/list_user", _UserService_ListUser0_HTTP_Handler(srv))
+	r.GET("/v2/blackpig/user/by_phone", _UserService_FindUserByPhone0_HTTP_Handler(srv))
+	r.POST("/v2/blackpig/user/update_user", _UserService_UpdateUser0_HTTP_Handler(srv))
+	r.POST("/v2/blackpig/user/delete_user", _UserService_DeleteUser0_HTTP_Handler(srv))
 }
 
 func _UserService_Login0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
@@ -187,7 +187,7 @@ func NewUserServiceHTTPClient(client *http.Client) UserServiceHTTPClient {
 
 func (c *UserServiceHTTPClientImpl) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...http.CallOption) (*DeleteUserReply, error) {
 	var out DeleteUserReply
-	pattern := "/v1/blackpig/user/delete_user"
+	pattern := "/v2/blackpig/user/delete_user"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserServiceDeleteUser))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -200,7 +200,7 @@ func (c *UserServiceHTTPClientImpl) DeleteUser(ctx context.Context, in *DeleteUs
 
 func (c *UserServiceHTTPClientImpl) FindUserByPhone(ctx context.Context, in *UserByPhoneRequest, opts ...http.CallOption) (*UserReply, error) {
 	var out UserReply
-	pattern := "/v1/blackpig/user/by_phone"
+	pattern := "/v2/blackpig/user/by_phone"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceFindUserByPhone))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -213,7 +213,7 @@ func (c *UserServiceHTTPClientImpl) FindUserByPhone(ctx context.Context, in *Use
 
 func (c *UserServiceHTTPClientImpl) ListUser(ctx context.Context, in *ListRequest, opts ...http.CallOption) (*ListReply, error) {
 	var out ListReply
-	pattern := "/v1/blackpig/user/list_user"
+	pattern := "/v2/blackpig/user/list_user"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceListUser))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -226,7 +226,7 @@ func (c *UserServiceHTTPClientImpl) ListUser(ctx context.Context, in *ListReques
 
 func (c *UserServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*UserReply, error) {
 	var out UserReply
-	pattern := "/v1/blackpig/user/login"
+	pattern := "/v2/blackpig/user/login"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceLogin))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -239,7 +239,7 @@ func (c *UserServiceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest,
 
 func (c *UserServiceHTTPClientImpl) Register(ctx context.Context, in *RegisterRequest, opts ...http.CallOption) (*RegisterReply, error) {
 	var out RegisterReply
-	pattern := "/v1/blackpig/user/register"
+	pattern := "/v2/blackpig/user/register"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserServiceRegister))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -252,7 +252,7 @@ func (c *UserServiceHTTPClientImpl) Register(ctx context.Context, in *RegisterRe
 
 func (c *UserServiceHTTPClientImpl) UpdateUser(ctx context.Context, in *RegisterRequest, opts ...http.CallOption) (*UserReply, error) {
 	var out UserReply
-	pattern := "/v1/blackpig/user/update_user"
+	pattern := "/v2/blackpig/user/update_user"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserServiceUpdateUser))
 	opts = append(opts, http.PathTemplate(pattern))

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.2
-// source: blackpig/v1/user.proto
+// source: blackpig/v2/user.proto
 
-package v1
+package v2
 
 import (
 	context "context"
@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_Login_FullMethodName           = "/blackpig.v1.UserService/Login"
-	UserService_Register_FullMethodName        = "/blackpig.v1.UserService/Register"
-	UserService_ListUser_FullMethodName        = "/blackpig.v1.UserService/ListUser"
-	UserService_FindUserByPhone_FullMethodName = "/blackpig.v1.UserService/FindUserByPhone"
-	UserService_UpdateUser_FullMethodName      = "/blackpig.v1.UserService/UpdateUser"
-	UserService_DeleteUser_FullMethodName      = "/blackpig.v1.UserService/DeleteUser"
+	UserService_Login_FullMethodName           = "/blackpig.v2.UserService/Login"
+	UserService_Register_FullMethodName        = "/blackpig.v2.UserService/Register"
+	UserService_ListUser_FullMethodName        = "/blackpig.v2.UserService/ListUser"
+	UserService_FindUserByPhone_FullMethodName = "/blackpig.v2.UserService/FindUserByPhone"
+	UserService_UpdateUser_FullMethodName      = "/blackpig.v2.UserService/UpdateUser"
+	UserService_DeleteUser_FullMethodName      = "/blackpig.v2.UserService/DeleteUser"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -278,7 +278,7 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "blackpig.v1.UserService",
+	ServiceName: "blackpig.v2.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -307,5 +307,5 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "blackpig/v1/user.proto",
+	Metadata: "blackpig/v2/user.proto",
 }

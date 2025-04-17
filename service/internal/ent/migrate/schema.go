@@ -8,6 +8,49 @@ import (
 )
 
 var (
+	// ReservesColumns holds the columns for the "reserves" table.
+	ReservesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeInt32},
+		{Name: "start_time", Type: field.TypeString},
+		{Name: "ordered_id", Type: field.TypeString},
+		{Name: "day", Type: field.TypeString},
+		{Name: "detail", Type: field.TypeString},
+	}
+	// ReservesTable holds the schema information for the "reserves" table.
+	ReservesTable = &schema.Table{
+		Name:       "reserves",
+		Columns:    ReservesColumns,
+		PrimaryKey: []*schema.Column{ReservesColumns[0]},
+	}
+	// TimeListsColumns holds the columns for the "time_lists" table.
+	TimeListsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeString},
+		{Name: "updated_at", Type: field.TypeString},
+		{Name: "times_id", Type: field.TypeInt64},
+	}
+	// TimeListsTable holds the schema information for the "time_lists" table.
+	TimeListsTable = &schema.Table{
+		Name:       "time_lists",
+		Columns:    TimeListsColumns,
+		PrimaryKey: []*schema.Column{TimeListsColumns[0]},
+	}
+	// TimesColumns holds the columns for the "times" table.
+	TimesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "user_id", Type: field.TypeInt64},
+		{Name: "time_space", Type: field.TypeString},
+		{Name: "start_time", Type: field.TypeString},
+	}
+	// TimesTable holds the schema information for the "times" table.
+	TimesTable = &schema.Table{
+		Name:       "times",
+		Columns:    TimesColumns,
+		PrimaryKey: []*schema.Column{TimesColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt32, Increment: true},
@@ -26,6 +69,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ReservesTable,
+		TimeListsTable,
+		TimesTable,
 		UsersTable,
 	}
 )

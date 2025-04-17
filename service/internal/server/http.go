@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "service/api/blackpig/v1"
+	v1 "service/api/blackpig/v2"
 	"service/internal/conf"
 	"service/internal/service"
 

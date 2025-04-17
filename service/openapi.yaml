@@ -3,10 +3,10 @@
 
 openapi: 3.0.3
 info:
-    title: UserService API
+    title: ""
     version: 0.0.1
 paths:
-    /v1/blackpig/user/by_phone:
+    /v2/blackpig/user/by_phone:
         get:
             tags:
                 - UserService
@@ -22,8 +22,8 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.UserReply'
-    /v1/blackpig/user/delete_user:
+                                $ref: '#/components/schemas/blackpig.v2.UserReply'
+    /v2/blackpig/user/delete_user:
         post:
             tags:
                 - UserService
@@ -32,7 +32,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/blackpig.v1.DeleteUserRequest'
+                            $ref: '#/components/schemas/blackpig.v2.DeleteUserRequest'
                 required: true
             responses:
                 "200":
@@ -40,8 +40,8 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.DeleteUserReply'
-    /v1/blackpig/user/list_user:
+                                $ref: '#/components/schemas/blackpig.v2.DeleteUserReply'
+    /v2/blackpig/user/list_user:
         get:
             tags:
                 - UserService
@@ -67,8 +67,8 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.ListReply'
-    /v1/blackpig/user/login:
+                                $ref: '#/components/schemas/blackpig.v2.ListReply'
+    /v2/blackpig/user/login:
         get:
             tags:
                 - UserService
@@ -84,8 +84,8 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.UserReply'
-    /v1/blackpig/user/register:
+                                $ref: '#/components/schemas/blackpig.v2.UserReply'
+    /v2/blackpig/user/register:
         post:
             tags:
                 - UserService
@@ -94,7 +94,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/blackpig.v1.User'
+                            $ref: '#/components/schemas/blackpig.v2.User'
                 required: true
             responses:
                 "200":
@@ -102,8 +102,8 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.RegisterReply'
-    /v1/blackpig/user/update_user:
+                                $ref: '#/components/schemas/blackpig.v2.RegisterReply'
+    /v2/blackpig/user/update_user:
         post:
             tags:
                 - UserService
@@ -112,7 +112,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/blackpig.v1.User'
+                            $ref: '#/components/schemas/blackpig.v2.User'
                 required: true
             responses:
                 "200":
@@ -120,33 +120,292 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/blackpig.v1.UserReply'
+                                $ref: '#/components/schemas/blackpig.v2.UserReply'
+    /v2/reserve/add:
+        post:
+            tags:
+                - TimeTableService
+            operationId: TimeTableService_AddTimeTables
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v2.Ordered'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.Ordered'
+    /v2/reserve/delete/{id}:
+        delete:
+            tags:
+                - TimeTableService
+            operationId: TimeTableService_DeleteTimeTable
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.DeleteTimeTableResponse'
+    /v2/reserve/get_ordered/{orderedId}:
+        get:
+            tags:
+                - TimeTableService
+            operationId: TimeTableService_GetOrderedByOrderedId
+            parameters:
+                - name: orderedId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.Ordered'
+    /v2/reserve/get_time_tables/{userId}/{day}:
+        get:
+            tags:
+                - TimeTableService
+            operationId: TimeTableService_GetTimeTablesOrdered
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+                - name: day
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.Ordered'
+    /v2/reserve/update:
+        patch:
+            tags:
+                - TimeTableService
+            operationId: TimeTableService_UpdateTimeTable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v2.TimeTable'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.TimeTable'
+    /v2/times/add:
+        post:
+            tags:
+                - TimeService
+            operationId: TimeService_CreateTime
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/blackpig.v2.TimeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.Times'
+    /v2/times/list{id}:
+        get:
+            tags:
+                - TimeService
+            operationId: TimeService_ListTimes
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.TimeList'
+    /v2/times/update:
+        patch:
+            tags:
+                - TimeService
+            operationId: TimeService_UpdateTime
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: timeSpace
+                  in: query
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.Times'
+    /v2/times/{id}:
+        delete:
+            tags:
+                - TimeService
+            operationId: TimeService_DeleteTime
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/blackpig.v2.DeleteTimeResponse'
 components:
     schemas:
-        blackpig.v1.DeleteUserReply:
+        blackpig.v2.DeleteTimeResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        blackpig.v2.DeleteTimeTableResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        blackpig.v2.DeleteUserReply:
             type: object
             properties:
                 state:
                     type: string
-        blackpig.v1.DeleteUserRequest:
+        blackpig.v2.DeleteUserRequest:
             type: object
             properties:
                 id:
                     type: integer
                     format: int32
-        blackpig.v1.ListReply:
+        blackpig.v2.ListReply:
             type: object
             properties:
                 user:
                     type: array
                     items:
-                        $ref: '#/components/schemas/blackpig.v1.User'
-        blackpig.v1.RegisterReply:
+                        $ref: '#/components/schemas/blackpig.v2.User'
+        blackpig.v2.Ordered:
+            type: object
+            properties:
+                timeTables:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/blackpig.v2.TimeTable'
+        blackpig.v2.RegisterReply:
             type: object
             properties:
                 state:
                     type: string
-        blackpig.v1.User:
+        blackpig.v2.TimeList:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: integer
+                    format: int32
+                times:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/blackpig.v2.Times'
+        blackpig.v2.TimeRequest:
+            type: object
+            properties:
+                userId:
+                    type: integer
+                    format: int32
+                timeSpace:
+                    type: string
+                startTime:
+                    type: string
+        blackpig.v2.TimeTable:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                day:
+                    type: string
+                userId:
+                    type: integer
+                    format: int32
+                orderedId:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+        blackpig.v2.Times:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: integer
+                    format: int32
+                timeSpace:
+                    type: string
+                startTime:
+                    type: string
+        blackpig.v2.User:
             type: object
             properties:
                 id:
@@ -166,10 +425,12 @@ components:
                         type: string
                 description:
                     type: string
-        blackpig.v1.UserReply:
+        blackpig.v2.UserReply:
             type: object
             properties:
                 user:
-                    $ref: '#/components/schemas/blackpig.v1.User'
+                    $ref: '#/components/schemas/blackpig.v2.User'
 tags:
+    - name: TimeService
+    - name: TimeTableService
     - name: UserService

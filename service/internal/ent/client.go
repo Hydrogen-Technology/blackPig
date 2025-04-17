@@ -11,6 +11,9 @@ import (
 
 	"service/internal/ent/migrate"
 
+	"service/internal/ent/reserve"
+	"service/internal/ent/timelist"
+	"service/internal/ent/times"
 	"service/internal/ent/user"
 
 	"entgo.io/ent"
@@ -23,6 +26,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Reserve is the client for interacting with the Reserve builders.
+	Reserve *ReserveClient
+	// TimeList is the client for interacting with the TimeList builders.
+	TimeList *TimeListClient
+	// Times is the client for interacting with the Times builders.
+	Times *TimesClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -36,6 +45,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Reserve = NewReserveClient(c.config)
+	c.TimeList = NewTimeListClient(c.config)
+	c.Times = NewTimesClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -127,9 +139,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Reserve:  NewReserveClient(cfg),
+		TimeList: NewTimeListClient(cfg),
+		Times:    NewTimesClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
@@ -147,16 +162,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Reserve:  NewReserveClient(cfg),
+		TimeList: NewTimeListClient(cfg),
+		Times:    NewTimesClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Reserve.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -178,22 +196,433 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Reserve.Use(hooks...)
+	c.TimeList.Use(hooks...)
+	c.Times.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Reserve.Intercept(interceptors...)
+	c.TimeList.Intercept(interceptors...)
+	c.Times.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ReserveMutation:
+		return c.Reserve.mutate(ctx, m)
+	case *TimeListMutation:
+		return c.TimeList.mutate(ctx, m)
+	case *TimesMutation:
+		return c.Times.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ReserveClient is a client for the Reserve schema.
+type ReserveClient struct {
+	config
+}
+
+// NewReserveClient returns a client for the Reserve from the given config.
+func NewReserveClient(c config) *ReserveClient {
+	return &ReserveClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reserve.Hooks(f(g(h())))`.
+func (c *ReserveClient) Use(hooks ...Hook) {
+	c.hooks.Reserve = append(c.hooks.Reserve, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reserve.Intercept(f(g(h())))`.
+func (c *ReserveClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Reserve = append(c.inters.Reserve, interceptors...)
+}
+
+// Create returns a builder for creating a Reserve entity.
+func (c *ReserveClient) Create() *ReserveCreate {
+	mutation := newReserveMutation(c.config, OpCreate)
+	return &ReserveCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Reserve entities.
+func (c *ReserveClient) CreateBulk(builders ...*ReserveCreate) *ReserveCreateBulk {
+	return &ReserveCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReserveClient) MapCreateBulk(slice any, setFunc func(*ReserveCreate, int)) *ReserveCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReserveCreateBulk{err: fmt.Errorf("calling to ReserveClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReserveCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReserveCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Reserve.
+func (c *ReserveClient) Update() *ReserveUpdate {
+	mutation := newReserveMutation(c.config, OpUpdate)
+	return &ReserveUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReserveClient) UpdateOne(r *Reserve) *ReserveUpdateOne {
+	mutation := newReserveMutation(c.config, OpUpdateOne, withReserve(r))
+	return &ReserveUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReserveClient) UpdateOneID(id int64) *ReserveUpdateOne {
+	mutation := newReserveMutation(c.config, OpUpdateOne, withReserveID(id))
+	return &ReserveUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Reserve.
+func (c *ReserveClient) Delete() *ReserveDelete {
+	mutation := newReserveMutation(c.config, OpDelete)
+	return &ReserveDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReserveClient) DeleteOne(r *Reserve) *ReserveDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReserveClient) DeleteOneID(id int64) *ReserveDeleteOne {
+	builder := c.Delete().Where(reserve.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReserveDeleteOne{builder}
+}
+
+// Query returns a query builder for Reserve.
+func (c *ReserveClient) Query() *ReserveQuery {
+	return &ReserveQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReserve},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Reserve entity by its id.
+func (c *ReserveClient) Get(ctx context.Context, id int64) (*Reserve, error) {
+	return c.Query().Where(reserve.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReserveClient) GetX(ctx context.Context, id int64) *Reserve {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ReserveClient) Hooks() []Hook {
+	return c.hooks.Reserve
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReserveClient) Interceptors() []Interceptor {
+	return c.inters.Reserve
+}
+
+func (c *ReserveClient) mutate(ctx context.Context, m *ReserveMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReserveCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReserveUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReserveUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReserveDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Reserve mutation op: %q", m.Op())
+	}
+}
+
+// TimeListClient is a client for the TimeList schema.
+type TimeListClient struct {
+	config
+}
+
+// NewTimeListClient returns a client for the TimeList from the given config.
+func NewTimeListClient(c config) *TimeListClient {
+	return &TimeListClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `timelist.Hooks(f(g(h())))`.
+func (c *TimeListClient) Use(hooks ...Hook) {
+	c.hooks.TimeList = append(c.hooks.TimeList, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `timelist.Intercept(f(g(h())))`.
+func (c *TimeListClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TimeList = append(c.inters.TimeList, interceptors...)
+}
+
+// Create returns a builder for creating a TimeList entity.
+func (c *TimeListClient) Create() *TimeListCreate {
+	mutation := newTimeListMutation(c.config, OpCreate)
+	return &TimeListCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TimeList entities.
+func (c *TimeListClient) CreateBulk(builders ...*TimeListCreate) *TimeListCreateBulk {
+	return &TimeListCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TimeListClient) MapCreateBulk(slice any, setFunc func(*TimeListCreate, int)) *TimeListCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TimeListCreateBulk{err: fmt.Errorf("calling to TimeListClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TimeListCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TimeListCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TimeList.
+func (c *TimeListClient) Update() *TimeListUpdate {
+	mutation := newTimeListMutation(c.config, OpUpdate)
+	return &TimeListUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TimeListClient) UpdateOne(tl *TimeList) *TimeListUpdateOne {
+	mutation := newTimeListMutation(c.config, OpUpdateOne, withTimeList(tl))
+	return &TimeListUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TimeListClient) UpdateOneID(id int64) *TimeListUpdateOne {
+	mutation := newTimeListMutation(c.config, OpUpdateOne, withTimeListID(id))
+	return &TimeListUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TimeList.
+func (c *TimeListClient) Delete() *TimeListDelete {
+	mutation := newTimeListMutation(c.config, OpDelete)
+	return &TimeListDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TimeListClient) DeleteOne(tl *TimeList) *TimeListDeleteOne {
+	return c.DeleteOneID(tl.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TimeListClient) DeleteOneID(id int64) *TimeListDeleteOne {
+	builder := c.Delete().Where(timelist.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TimeListDeleteOne{builder}
+}
+
+// Query returns a query builder for TimeList.
+func (c *TimeListClient) Query() *TimeListQuery {
+	return &TimeListQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTimeList},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TimeList entity by its id.
+func (c *TimeListClient) Get(ctx context.Context, id int64) (*TimeList, error) {
+	return c.Query().Where(timelist.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TimeListClient) GetX(ctx context.Context, id int64) *TimeList {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TimeListClient) Hooks() []Hook {
+	return c.hooks.TimeList
+}
+
+// Interceptors returns the client interceptors.
+func (c *TimeListClient) Interceptors() []Interceptor {
+	return c.inters.TimeList
+}
+
+func (c *TimeListClient) mutate(ctx context.Context, m *TimeListMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TimeListCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TimeListUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TimeListUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TimeListDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TimeList mutation op: %q", m.Op())
+	}
+}
+
+// TimesClient is a client for the Times schema.
+type TimesClient struct {
+	config
+}
+
+// NewTimesClient returns a client for the Times from the given config.
+func NewTimesClient(c config) *TimesClient {
+	return &TimesClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `times.Hooks(f(g(h())))`.
+func (c *TimesClient) Use(hooks ...Hook) {
+	c.hooks.Times = append(c.hooks.Times, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `times.Intercept(f(g(h())))`.
+func (c *TimesClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Times = append(c.inters.Times, interceptors...)
+}
+
+// Create returns a builder for creating a Times entity.
+func (c *TimesClient) Create() *TimesCreate {
+	mutation := newTimesMutation(c.config, OpCreate)
+	return &TimesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Times entities.
+func (c *TimesClient) CreateBulk(builders ...*TimesCreate) *TimesCreateBulk {
+	return &TimesCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TimesClient) MapCreateBulk(slice any, setFunc func(*TimesCreate, int)) *TimesCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TimesCreateBulk{err: fmt.Errorf("calling to TimesClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TimesCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TimesCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Times.
+func (c *TimesClient) Update() *TimesUpdate {
+	mutation := newTimesMutation(c.config, OpUpdate)
+	return &TimesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TimesClient) UpdateOne(t *Times) *TimesUpdateOne {
+	mutation := newTimesMutation(c.config, OpUpdateOne, withTimes(t))
+	return &TimesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TimesClient) UpdateOneID(id int64) *TimesUpdateOne {
+	mutation := newTimesMutation(c.config, OpUpdateOne, withTimesID(id))
+	return &TimesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Times.
+func (c *TimesClient) Delete() *TimesDelete {
+	mutation := newTimesMutation(c.config, OpDelete)
+	return &TimesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TimesClient) DeleteOne(t *Times) *TimesDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TimesClient) DeleteOneID(id int64) *TimesDeleteOne {
+	builder := c.Delete().Where(times.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TimesDeleteOne{builder}
+}
+
+// Query returns a query builder for Times.
+func (c *TimesClient) Query() *TimesQuery {
+	return &TimesQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTimes},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Times entity by its id.
+func (c *TimesClient) Get(ctx context.Context, id int64) (*Times, error) {
+	return c.Query().Where(times.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TimesClient) GetX(ctx context.Context, id int64) *Times {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TimesClient) Hooks() []Hook {
+	return c.hooks.Times
+}
+
+// Interceptors returns the client interceptors.
+func (c *TimesClient) Interceptors() []Interceptor {
+	return c.inters.Times
+}
+
+func (c *TimesClient) mutate(ctx context.Context, m *TimesMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TimesCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TimesUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TimesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TimesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Times mutation op: %q", m.Op())
 	}
 }
 
@@ -333,9 +762,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		User []ent.Hook
+		Reserve, TimeList, Times, User []ent.Hook
 	}
 	inters struct {
-		User []ent.Interceptor
+		Reserve, TimeList, Times, User []ent.Interceptor
 	}
 )

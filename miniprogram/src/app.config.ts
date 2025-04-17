@@ -4,6 +4,7 @@ export default defineAppConfig({
     'pages/user/index',
     'pages/reserve/index',
     'pages/record/index',
+    'pages/reserve/detail/index',
   ],
   window: {
     backgroundTextStyle: 'light',

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	v1 "service/api/blackpig/v1"
+	v1 "service/api/blackpig/v2"
 	"service/internal/biz"
 )
 

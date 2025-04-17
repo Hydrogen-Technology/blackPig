@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"service/internal/ent/reserve"
+	"service/internal/ent/timelist"
+	"service/internal/ent/times"
 	"service/internal/ent/user"
 	"sync"
 
@@ -73,7 +76,10 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			user.Table: user.ValidColumn,
+			reserve.Table:  reserve.ValidColumn,
+			timelist.Table: timelist.ValidColumn,
+			times.Table:    times.ValidColumn,
+			user.Table:     user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

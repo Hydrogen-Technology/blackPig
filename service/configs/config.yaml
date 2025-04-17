@@ -8,7 +8,7 @@ server:
 data:
   database:
     driver: mysql
-    source: root:Root@2233@tcp(113.44.59.175:3306)/blackpig?timeout=100s&parseTime=true&loc=Local&charset=utf8mb4,utf8
+    source: root:root@2233@tcp(113.44.59.175:3306)/blackpig?timeout=100s&parseTime=true&loc=Local&charset=utf8mb4,utf8
   redis:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s

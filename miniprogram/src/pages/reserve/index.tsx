@@ -3,6 +3,7 @@ import { View } from '@tarojs/components';
 import { AtList, AtListItem,AtSearchBar } from 'taro-ui';
 import './index.scss'
 import { Container } from '../../components/container/container';
+import Taro from '@tarojs/taro';
 
 
 
@@ -73,4 +74,7 @@ const Leaders = () => {
 }
 const reserve = (id:string) => {
   console.log('预约函数跳转',id)
+  Taro.navigateTo({
+    url:'/pages/reserve/detail/index'
+  })
 }

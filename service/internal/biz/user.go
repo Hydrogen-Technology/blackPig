@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/errors"
 	"net/http"
-	v1 "service/api/blackpig/v1"
+	v2 "service/api/blackpig/v2"
 	"service/internal/conf"
 )
 
@@ -20,7 +20,7 @@ type User struct {
 	Description string
 }
 
-func revertUser(user *v1.User) *User {
+func revertUser(user *v2.User) *User {
 	return &User{
 		Id:          user.Id,
 		Openid:      user.Openid,
